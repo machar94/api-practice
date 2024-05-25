@@ -11,7 +11,7 @@
 # GET /library/{book}
 # POST /query
 
-# Mock Database: SQLite (In Memory)
+# Mock Database: SQLite (local)
 # API: Build with Flask
 
 # Database Schema
@@ -115,6 +115,12 @@ def run_query():
             return jsonify({'Error': str(e)}), 400
         
 # Example:
+# curl  -X POST \
+#   'http://localhost:5000/library/add' \
+#   --header 'Accept: */*' \
+#   --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
+#   --header 'Content-Type: application/json' \
+#   --data-raw '{"book": "Mistborn"}'
 @app.route('/library/add', methods=["POST"])
 def add_book():
     with sqlite3.connect('library.db') as conn:
