@@ -95,7 +95,12 @@ def get_books(book):
             return jsonify({'Key Error': f'Library does not contain {book}'}), 404
         
 # Example:
-# curl -X POST -H "Content-Type: application/json" -d '{"query": "SELECT * FROM lib"}' http://localhost:5000/query
+# curl  -X POST \
+#   'http://localhost:5000/query' \
+#   --header 'Accept: */*' \
+#   --header 'User-Agent: Thunder Client (https://www.thunderclient.com)' \
+#   --header 'Content-Type: application/json' \
+#   --data-raw '{"query": "SELECT * FROM lib"}'
 @app.route('/query', methods=['POST'])
 def run_query():
     with sqlite3.connect('library.db') as conn:
@@ -106,6 +111,32 @@ def run_query():
             cursor.execute(query)
             rows = cursor.fetchall()
             return jsonify(rows), 200
+        except Exception as e:
+            return jsonify({'Error': str(e)}), 400
+        
+# Example:
+@app.route('/library/add', methods=["POST"])
+def add_book():
+    with sqlite3.connect('library.db') as conn:
+        book_name = request.json["book"]
+
+        try:
+            cursor = conn.cursor()
+
+            # Generate a new ID
+            cursor.execute(
+                '''
+                SELECT max(id) FROM lib
+                '''
+            )
+
+            row = cursor.fetchone()
+            book_id = row[0] + 1
+
+            cursor.execute('INSERT INTO lib VALUES (?, ?, ?)', (book_id, book_name, None))
+            conn.commit()
+
+            return jsonify({'Response': f'Successfully added {book_name} to the catalog'}), 200
         except Exception as e:
             return jsonify({'Error': str(e)}), 400
 
